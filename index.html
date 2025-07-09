@@ -108,6 +108,11 @@
             font-weight: 600;
             transition: width 0.5s ease-in-out;
         }
+        .goal-breakdown {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #e5e7eb;
+        }
     </style>
 </head>
 <body class="p-4 sm:p-6 md:p-8">
@@ -152,6 +157,16 @@
                         <div class="text-sm text-gray-600 mt-2 flex justify-between">
                             <span id="goal-saved-text">Saved: $0.00</span>
                             <span id="goal-remaining-text">Remaining: $20,000.00</span>
+                        </div>
+                    </div>
+                    <div class="goal-breakdown">
+                        <div class="flex justify-between text-sm text-gray-600 mb-2">
+                            <span class="font-medium">Target Monthly Savings:</span>
+                            <span id="monthly-goal-text" class="font-bold text-blue-600">$1,666.67</span>
+                        </div>
+                        <div class="flex justify-between text-sm text-gray-600">
+                            <span class="font-medium">Target Weekly Savings:</span>
+                            <span id="weekly-goal-text" class="font-bold text-blue-600">$416.67</span>
                         </div>
                     </div>
                 </div>
@@ -200,6 +215,8 @@
         const goalProgressBar = document.getElementById('goal-progress-bar');
         const goalSavedText = document.getElementById('goal-saved-text');
         const goalRemainingText = document.getElementById('goal-remaining-text');
+        const monthlyGoalText = document.getElementById('monthly-goal-text');
+        const weeklyGoalText = document.getElementById('weekly-goal-text');
 
         // --- Data Management ---
         let weeklyEntries = [];
@@ -263,6 +280,22 @@
             totalExpensesDisplay.textContent = formatCurrency(totalExpenses);
             totalSavingsDisplay.textContent = formatCurrency(currentSavings);
         };
+        
+        const updateGoalBreakdown = () => {
+            const goalAmount = parseFloat(savingsGoalInput.value) || 0;
+            const startingAmount = parseFloat(startingAmountInput.value) || 0;
+            const remainingToSave = goalAmount - startingAmount;
+
+            if (remainingToSave > 0) {
+                const monthlyGoal = remainingToSave / 12;
+                const weeklyGoal = monthlyGoal / 4;
+                monthlyGoalText.textContent = formatCurrency(monthlyGoal);
+                weeklyGoalText.textContent = formatCurrency(weeklyGoal);
+            } else {
+                monthlyGoalText.textContent = formatCurrency(0);
+                weeklyGoalText.textContent = formatCurrency(0);
+            }
+        };
 
         const updateGoalProgress = () => {
             const goalAmount = parseFloat(savingsGoalInput.value) || 0;
@@ -295,6 +328,7 @@
             renderLog();
             updateTotals();
             updateGoalProgress();
+            updateGoalBreakdown();
             updateEntryButton();
             saveData();
         };
@@ -321,8 +355,14 @@
                 weeklyEntries = [];
                 localStorage.clear();
                 weeklyEntryForm.reset();
-                document.getElementById('fixed-expenses-inputs').closest('form')?.reset(); // Reset fixed inputs if in a form
-                loadData(); // Load default values
+                // Find the form containing the fixed inputs and reset it to restore default HTML values
+                const fixedExpensesForm = document.getElementById('fixed-expenses-inputs').closest('form');
+                if (fixedExpensesForm) {
+                    fixedExpensesForm.reset();
+                } else { // Fallback if not in a form
+                    document.getElementById('fixed-expenses-inputs').querySelectorAll('input').forEach(input => input.value = input.defaultValue);
+                }
+                loadData(); // Load default values from storage (or hardcoded)
                 runUpdates();
             }
         });
