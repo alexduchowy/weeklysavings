@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weekly Savings Log & Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+        .card {
+            background-color: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .input-group {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+        .input-group label {
+            font-weight: 500;
+            color: #4b5563;
+        }
+        .input-field {
+            width: 130px;
+            text-align: right;
+            border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
+            padding: 0.5rem;
+            transition: border-color 0.2s;
+        }
+        .input-field:focus {
+            outline: none;
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 2px #c7d2fe;
+        }
+        .summary-card {
+            background-color: #f9fafb;
+            border: 1px solid #e5e7eb;
+        }
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .summary-row:last-child { border-bottom: none; }
+        .summary-label { font-weight: 600; color: #1f2937; }
+        .summary-value { font-weight: 700; }
+        .savings-value { color: #16a34a; }
+        .expenses-value { color: #dc2626; }
+        .earnings-value { color: #2563eb; }
+        .action-btn {
+            background-color: #4f46e5;
+            color: white;
+            font-weight: 500;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            width: 100%;
+            text-align: center;
+            border: none;
+        }
+        .action-btn:hover { background-color: #4338ca; }
+        .action-btn:disabled { background-color: #a5b4fc; cursor: not-allowed; }
+        .log-table {
+            width: 100%;
+            margin-top: 1rem;
+            border-collapse: collapse;
+        }
+        .log-table th, .log-table td {
+            text-align: left;
+            padding: 0.75rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .log-table th {
+            background-color: #f9fafb;
+            font-weight: 600;
+            color: #374151;
+        }
+        .log-table td { color: #4b5563; }
+        .log-table tr:last-child td { border-bottom: none; }
+        .text-right { text-align: right; }
+    </style>
+</head>
+<body class="p-4 sm:p-6 md:p-8">
+
+    <div class="max-w-5xl mx-auto">
+        <h1 class="text-3xl font-bold text-center text-gray-800 mb-8">Weekly Savings Log & Tracker</h1>
+
+        <div class="grid md:grid-cols-2 gap-8">
+            <!-- Left Column: Entry & Log -->
+            <div>
+                <div class="card">
+                    <h2 class="text-2xl font-semibold text-gray-700 mb-4 border-b pb-2">Add Weekly Entry</h2>
+                    <form id="weekly-entry-form">
+                        <div class="input-group">
+                            <label for="alex-entry">Alex's Earnings</label>
+                            <div class="flex items-center"><span class="mr-2 text-gray-500">$</span><input type="number" id="alex-entry" class="input-field" placeholder="0.00" required></div>
+                        </div>
+                        <div class="input-group">
+                            <label for="amy-entry">Amy's Earnings</label>
+                            <div class="flex items-center"><span class="mr-2 text-gray-500">$</span><input type="number" id="amy-entry" class="input-field" placeholder="0.00" required></div>
+                        </div>
+                        <div class="input-group">
+                            <label for="spent-entry">Amount Spent</label>
+                            <div class="flex items-center"><span class="mr-2 text-gray-500">$</span><input type="number" id="spent-entry" class="input-field" placeholder="0.00" required></div>
+                        </div>
+                        <button type="submit" id="add-entry-btn" class="action-btn mt-4">Add Week <span id="next-week-num">1</span> Entry</button>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <h2 class="text-2xl font-semibold text-gray-700 mb-4 border-b pb-2">Weekly Log</h2>
+                    <div id="log-container">
+                        <table class="log-table">
+                            <thead>
+                                <tr>
+                                    <th>Week</th>
+                                    <th class="text-right">Earnings</th>
+                                    <th class="text-right">Spent</th>
+                                    <th class="text-right">Net</th>
+                                </tr>
+                            </thead>
+                            <tbody id="weekly-log-body">
+                                <!-- Entries will be added here -->
+                            </tbody>
+                        </table>
+                        <p id="log-placeholder" class="text-center text-gray-500 py-4">No entries added for this month yet.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Fixed Bills & Summary -->
+            <div>
+                <div class="card">
+                    <h2 class="text-2xl font-semibold text-gray-700 mb-4 border-b pb-2">Fixed Monthly Bills</h2>
+                    <div id="fixed-expenses-inputs">
+                        <div class="input-group"><label for="rent">Rent</label><div class="flex items-center"><span class="mr-2 text-gray-500">$</span><input type="number" id="rent" class="input-field monthly-expense" value="1500"></div></div>
+                        <div class="input-group"><label for="dentist">Dentist</label><div class="flex items-center"><span class="mr-2 text-gray-500">$</span><input type="number" id="dentist" class="input-field monthly-expense" value="214"></div></div>
+                        <div class="input-group"><label for="car-insurance">Car Insurance</label><div class="flex items-center"><span class="mr-2 text-gray-500">$</span><input type="number" id="car-insurance" class="input-field monthly-expense" value="206"></div></div>
+                        <div class="input-group"><label for="att">AT&T</label><div class="flex items-center"><span class="mr-2 text-gray-500">$</span><input type="number" id="att" class="input-field monthly-expense" value="70"></div></div>
+                        <div class="input-group"><label for="verizon">Verizon</label><div class="flex items-center"><span class="mr-2 text-gray-500">$</span><input type="number" id="verizon" class="input-field monthly-expense" value="112"></div></div>
+                        <div class="input-group"><label for="carwash">Car Wash</label><div class="flex items-center"><span class="mr-2 text-gray-500">$</span><input type="number" id="carwash" class="input-field monthly-expense" value="30"></div></div>
+                        <div class="input-group"><label for="apt-insurance">Apt Insurance</label><div class="flex items-center"><span class="mr-2 text-gray-500">$</span><input type="number" id="apt-insurance" class="input-field monthly-expense" value="16"></div></div>
+                    </div>
+                </div>
+
+                <div class="card summary-card sticky top-8">
+                    <h2 class="text-2xl font-semibold text-gray-700 mb-4 border-b pb-2">Monthly Summary</h2>
+                    <div class="summary-row"><span class="summary-label">Total Earnings</span><span id="total-earnings" class="summary-value text-2xl earnings-value">$0.00</span></div>
+                    <div class="summary-row"><span class="summary-label">Total Expenses</span><span id="total-expenses" class="summary-value text-2xl expenses-value">$0.00</span></div>
+                    <div class="summary-row"><span class="summary-label">Total Savings</span><span id="total-savings" class="summary-value text-3xl savings-value">$0.00</span></div>
+                </div>
+                 <div class="mt-8">
+                    <button id="reset-button" class="action-btn bg-red-600 hover:bg-red-700">Reset All Data</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const weeklyEntryForm = document.getElementById('weekly-entry-form');
+        const addEntryBtn = document.getElementById('add-entry-btn');
+        const nextWeekNumSpan = document.getElementById('next-week-num');
+        const weeklyLogBody = document.getElementById('weekly-log-body');
+        const logPlaceholder = document.getElementById('log-placeholder');
+        const monthlyExpenseInputs = document.querySelectorAll('.monthly-expense');
+        const resetButton = document.getElementById('reset-button');
+
+        const totalEarningsDisplay = document.getElementById('total-earnings');
+        const totalExpensesDisplay = document.getElementById('total-expenses');
+        const totalSavingsDisplay = document.getElementById('total-savings');
+
+        // --- Data Management ---
+        let weeklyEntries = [];
+
+        const formatCurrency = amount => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
+
+        const saveData = () => {
+            localStorage.setItem('savingsLogEntries', JSON.stringify(weeklyEntries));
+            const fixedExpenses = {};
+            monthlyExpenseInputs.forEach(input => {
+                fixedExpenses[input.id] = input.value;
+            });
+            localStorage.setItem('savingsLogFixed', JSON.stringify(fixedExpenses));
+        };
+
+        const loadData = () => {
+            const savedEntries = localStorage.getItem('savingsLogEntries');
+            if (savedEntries) {
+                weeklyEntries = JSON.parse(savedEntries);
+            }
+            const savedFixed = localStorage.getItem('savingsLogFixed');
+            if(savedFixed) {
+                const fixedExpenses = JSON.parse(savedFixed);
+                monthlyExpenseInputs.forEach(input => {
+                    if(fixedExpenses[input.id]) {
+                        input.value = fixedExpenses[input.id];
+                    }
+                });
+            }
+        };
+
+        // --- UI Rendering ---
+        const renderLog = () => {
+            weeklyLogBody.innerHTML = '';
+            if (weeklyEntries.length === 0) {
+                logPlaceholder.style.display = 'block';
+                return;
+            }
+            logPlaceholder.style.display = 'none';
+
+            weeklyEntries.forEach(entry => {
+                const row = document.createElement('tr');
+                const totalEarnings = entry.alex + entry.amy;
+                const net = totalEarnings - entry.spent;
+                row.innerHTML = `
+                    <td>Week ${entry.week}</td>
+                    <td class="text-right">${formatCurrency(totalEarnings)}</td>
+                    <td class="text-right">${formatCurrency(entry.spent)}</td>
+                    <td class="text-right font-medium ${net >= 0 ? 'text-green-600' : 'text-red-600'}">${formatCurrency(net)}</td>
+                `;
+                weeklyLogBody.appendChild(row);
+            });
+        };
+
+        const updateTotals = () => {
+            const loggedEarnings = weeklyEntries.reduce((sum, entry) => sum + entry.alex + entry.amy, 0);
+            const loggedSpending = weeklyEntries.reduce((sum, entry) => sum + entry.spent, 0);
+            
+            let fixedSpending = 0;
+            monthlyExpenseInputs.forEach(input => {
+                fixedSpending += parseFloat(input.value) || 0;
+            });
+
+            const totalEarnings = loggedEarnings;
+            const totalExpenses = loggedSpending + fixedSpending;
+            const totalSavings = totalEarnings - totalExpenses;
+
+            totalEarningsDisplay.textContent = formatCurrency(totalEarnings);
+            totalExpensesDisplay.textContent = formatCurrency(totalExpenses);
+            totalSavingsDisplay.textContent = formatCurrency(totalSavings);
+        };
+
+        const updateEntryButton = () => {
+            const nextWeek = weeklyEntries.length + 1;
+            nextWeekNumSpan.textContent = nextWeek;
+            if (nextWeek > 4) {
+                addEntryBtn.textContent = 'Month Complete';
+                addEntryBtn.disabled = true;
+            } else {
+                addEntryBtn.textContent = `Add Week ${nextWeek} Entry`;
+                addEntryBtn.disabled = false;
+            }
+        };
+
+        // --- Event Handlers ---
+        weeklyEntryForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const alexEntry = parseFloat(document.getElementById('alex-entry').value) || 0;
+            const amyEntry = parseFloat(document.getElementById('amy-entry').value) || 0;
+            const spentEntry = parseFloat(document.getElementById('spent-entry').value) || 0;
+            
+            weeklyEntries.push({
+                week: weeklyEntries.length + 1,
+                alex: alexEntry,
+                amy: amyEntry,
+                spent: spentEntry
+            });
+
+            weeklyEntryForm.reset();
+            
+            runUpdates();
+        });
+        
+        monthlyExpenseInputs.forEach(input => {
+            input.addEventListener('input', () => {
+                updateTotals();
+                saveData();
+            });
+        });
+
+        resetButton.addEventListener('click', () => {
+            if (confirm('Are you sure you want to reset all data for the month? This cannot be undone.')) {
+                weeklyEntries = [];
+                localStorage.removeItem('savingsLogEntries');
+                localStorage.removeItem('savingsLogFixed');
+                // Manually reset form since it's not part of the data structure
+                document.getElementById('fixed-expenses-inputs').querySelectorAll('input').forEach(input => {
+                    // This is a bit of a trick to reset to default values in the HTML
+                    const tempForm = document.createElement('form');
+                    const tempInput = document.createElement('input');
+                    tempInput.type = input.type;
+                    tempInput.value = input.defaultValue;
+                    input.value = tempInput.value;
+                });
+                runUpdates();
+            }
+        });
+
+        const runUpdates = () => {
+            renderLog();
+            updateTotals();
+            updateEntryButton();
+            saveData();
+        };
+
+        // --- Initial Load ---
+        loadData();
+        runUpdates();
+    });
+    </script>
+</body>
+</html>
