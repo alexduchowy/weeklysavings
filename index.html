@@ -90,6 +90,24 @@
         .log-table td { color: #4b5563; }
         .log-table tr:last-child td { border-bottom: none; }
         .text-right { text-align: right; }
+        .progress-bar-container {
+            width: 100%;
+            background-color: #e5e7eb;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            margin-top: 0.5rem;
+        }
+        .progress-bar {
+            height: 1.5rem;
+            background-color: #22c55e; /* green-500 */
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.875rem;
+            font-weight: 600;
+            transition: width 0.5s ease-in-out;
+        }
     </style>
 </head>
 <body class="p-4 sm:p-6 md:p-8">
@@ -103,18 +121,9 @@
                 <div class="card">
                     <h2 class="text-2xl font-semibold text-gray-700 mb-4 border-b pb-2">Add Weekly Entry</h2>
                     <form id="weekly-entry-form">
-                        <div class="input-group">
-                            <label for="alex-entry">Alex's Earnings</label>
-                            <div class="flex items-center"><span class="mr-2 text-gray-500">$</span><input type="number" id="alex-entry" class="input-field" placeholder="0.00" required></div>
-                        </div>
-                        <div class="input-group">
-                            <label for="amy-entry">Amy's Earnings</label>
-                            <div class="flex items-center"><span class="mr-2 text-gray-500">$</span><input type="number" id="amy-entry" class="input-field" placeholder="0.00" required></div>
-                        </div>
-                        <div class="input-group">
-                            <label for="spent-entry">Amount Spent</label>
-                            <div class="flex items-center"><span class="mr-2 text-gray-500">$</span><input type="number" id="spent-entry" class="input-field" placeholder="0.00" required></div>
-                        </div>
+                        <div class="input-group"><label for="alex-entry">Alex's Earnings</label><div class="flex items-center"><span class="mr-2 text-gray-500">$</span><input type="number" step="0.01" id="alex-entry" class="input-field" placeholder="0.00" required></div></div>
+                        <div class="input-group"><label for="amy-entry">Amy's Earnings</label><div class="flex items-center"><span class="mr-2 text-gray-500">$</span><input type="number" step="0.01" id="amy-entry" class="input-field" placeholder="0.00" required></div></div>
+                        <div class="input-group"><label for="spent-entry">Amount Spent</label><div class="flex items-center"><span class="mr-2 text-gray-500">$</span><input type="number" step="0.01" id="spent-entry" class="input-field" placeholder="0.00" required></div></div>
                         <button type="submit" id="add-entry-btn" class="action-btn mt-4">Add Week <span id="next-week-num">1</span> Entry</button>
                     </form>
                 </div>
@@ -123,25 +132,30 @@
                     <h2 class="text-2xl font-semibold text-gray-700 mb-4 border-b pb-2">Weekly Log</h2>
                     <div id="log-container">
                         <table class="log-table">
-                            <thead>
-                                <tr>
-                                    <th>Week</th>
-                                    <th class="text-right">Earnings</th>
-                                    <th class="text-right">Spent</th>
-                                    <th class="text-right">Net</th>
-                                </tr>
-                            </thead>
-                            <tbody id="weekly-log-body">
-                                <!-- Entries will be added here -->
-                            </tbody>
+                            <thead><tr><th>Week</th><th class="text-right">Earnings</th><th class="text-right">Spent</th><th class="text-right">Net</th></tr></thead>
+                            <tbody id="weekly-log-body"></tbody>
                         </table>
                         <p id="log-placeholder" class="text-center text-gray-500 py-4">No entries added for this month yet.</p>
                     </div>
                 </div>
             </div>
 
-            <!-- Right Column: Fixed Bills & Summary -->
+            <!-- Right Column: Goal, Fixed Bills & Summary -->
             <div>
+                <div class="card">
+                    <h2 class="text-2xl font-semibold text-gray-700 mb-4 border-b pb-2">12-Month Savings Goal</h2>
+                    <div class="input-group"><label for="savings-goal">Goal Amount</label><div class="flex items-center"><span class="mr-2 text-gray-500">$</span><input type="number" step="0.01" id="savings-goal" class="input-field" value="20000"></div></div>
+                    <div class="input-group"><label for="starting-amount">Starting Amount</label><div class="flex items-center"><span class="mr-2 text-gray-500">$</span><input type="number" step="0.01" id="starting-amount" class="input-field" value="0"></div></div>
+                    <div class="mt-4">
+                        <label class="font-medium text-gray-600">Progress</label>
+                        <div class="progress-bar-container"><div id="goal-progress-bar" class="progress-bar" style="width: 0%;">0%</div></div>
+                        <div class="text-sm text-gray-600 mt-2 flex justify-between">
+                            <span id="goal-saved-text">Saved: $0.00</span>
+                            <span id="goal-remaining-text">Remaining: $20,000.00</span>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="card">
                     <h2 class="text-2xl font-semibold text-gray-700 mb-4 border-b pb-2">Fixed Monthly Bills</h2>
                     <div id="fixed-expenses-inputs">
@@ -156,10 +170,10 @@
                 </div>
 
                 <div class="card summary-card sticky top-8">
-                    <h2 class="text-2xl font-semibold text-gray-700 mb-4 border-b pb-2">Monthly Summary</h2>
+                    <h2 class="text-2xl font-semibold text-gray-700 mb-4 border-b pb-2">This Month's Summary</h2>
                     <div class="summary-row"><span class="summary-label">Total Earnings</span><span id="total-earnings" class="summary-value text-2xl earnings-value">$0.00</span></div>
                     <div class="summary-row"><span class="summary-label">Total Expenses</span><span id="total-expenses" class="summary-value text-2xl expenses-value">$0.00</span></div>
-                    <div class="summary-row"><span class="summary-label">Total Savings</span><span id="total-savings" class="summary-value text-3xl savings-value">$0.00</span></div>
+                    <div class="summary-row"><span class="summary-label">Net Savings</span><span id="total-savings" class="summary-value text-3xl savings-value">$0.00</span></div>
                 </div>
                  <div class="mt-8">
                     <button id="reset-button" class="action-btn bg-red-600 hover:bg-red-700">Reset All Data</button>
@@ -170,6 +184,7 @@
 
     <script>
     document.addEventListener('DOMContentLoaded', () => {
+        // --- Element Selectors ---
         const weeklyEntryForm = document.getElementById('weekly-entry-form');
         const addEntryBtn = document.getElementById('add-entry-btn');
         const nextWeekNumSpan = document.getElementById('next-week-num');
@@ -177,49 +192,48 @@
         const logPlaceholder = document.getElementById('log-placeholder');
         const monthlyExpenseInputs = document.querySelectorAll('.monthly-expense');
         const resetButton = document.getElementById('reset-button');
-
         const totalEarningsDisplay = document.getElementById('total-earnings');
         const totalExpensesDisplay = document.getElementById('total-expenses');
         const totalSavingsDisplay = document.getElementById('total-savings');
+        const savingsGoalInput = document.getElementById('savings-goal');
+        const startingAmountInput = document.getElementById('starting-amount');
+        const goalProgressBar = document.getElementById('goal-progress-bar');
+        const goalSavedText = document.getElementById('goal-saved-text');
+        const goalRemainingText = document.getElementById('goal-remaining-text');
 
         // --- Data Management ---
         let weeklyEntries = [];
+        let currentSavings = 0;
 
         const formatCurrency = amount => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
 
         const saveData = () => {
             localStorage.setItem('savingsLogEntries', JSON.stringify(weeklyEntries));
             const fixedExpenses = {};
-            monthlyExpenseInputs.forEach(input => {
-                fixedExpenses[input.id] = input.value;
-            });
+            monthlyExpenseInputs.forEach(input => { fixedExpenses[input.id] = input.value; });
             localStorage.setItem('savingsLogFixed', JSON.stringify(fixedExpenses));
+            localStorage.setItem('savingsLogGoal', savingsGoalInput.value);
+            localStorage.setItem('savingsLogStart', startingAmountInput.value);
         };
 
         const loadData = () => {
             const savedEntries = localStorage.getItem('savingsLogEntries');
-            if (savedEntries) {
-                weeklyEntries = JSON.parse(savedEntries);
-            }
+            if (savedEntries) weeklyEntries = JSON.parse(savedEntries);
+            
             const savedFixed = localStorage.getItem('savingsLogFixed');
             if(savedFixed) {
                 const fixedExpenses = JSON.parse(savedFixed);
-                monthlyExpenseInputs.forEach(input => {
-                    if(fixedExpenses[input.id]) {
-                        input.value = fixedExpenses[input.id];
-                    }
-                });
+                monthlyExpenseInputs.forEach(input => { if(fixedExpenses[input.id]) input.value = fixedExpenses[input.id]; });
             }
+
+            savingsGoalInput.value = localStorage.getItem('savingsLogGoal') || '20000';
+            startingAmountInput.value = localStorage.getItem('savingsLogStart') || '0';
         };
 
-        // --- UI Rendering ---
+        // --- UI Rendering & Calculations ---
         const renderLog = () => {
             weeklyLogBody.innerHTML = '';
-            if (weeklyEntries.length === 0) {
-                logPlaceholder.style.display = 'block';
-                return;
-            }
-            logPlaceholder.style.display = 'none';
+            logPlaceholder.style.display = weeklyEntries.length === 0 ? 'block' : 'none';
 
             weeklyEntries.forEach(entry => {
                 const row = document.createElement('tr');
@@ -238,19 +252,31 @@
         const updateTotals = () => {
             const loggedEarnings = weeklyEntries.reduce((sum, entry) => sum + entry.alex + entry.amy, 0);
             const loggedSpending = weeklyEntries.reduce((sum, entry) => sum + entry.spent, 0);
-            
             let fixedSpending = 0;
-            monthlyExpenseInputs.forEach(input => {
-                fixedSpending += parseFloat(input.value) || 0;
-            });
+            monthlyExpenseInputs.forEach(input => { fixedSpending += parseFloat(input.value) || 0; });
 
             const totalEarnings = loggedEarnings;
             const totalExpenses = loggedSpending + fixedSpending;
-            const totalSavings = totalEarnings - totalExpenses;
+            currentSavings = totalEarnings - totalExpenses; // Update global current savings
 
             totalEarningsDisplay.textContent = formatCurrency(totalEarnings);
             totalExpensesDisplay.textContent = formatCurrency(totalExpenses);
-            totalSavingsDisplay.textContent = formatCurrency(totalSavings);
+            totalSavingsDisplay.textContent = formatCurrency(currentSavings);
+        };
+
+        const updateGoalProgress = () => {
+            const goalAmount = parseFloat(savingsGoalInput.value) || 0;
+            const startingAmount = parseFloat(startingAmountInput.value) || 0;
+            
+            const totalSaved = startingAmount + currentSavings;
+            const remaining = goalAmount - totalSaved;
+            const progress = goalAmount > 0 ? Math.max(0, Math.min(100, (totalSaved / goalAmount) * 100)) : 0;
+
+            goalProgressBar.style.width = `${progress}%`;
+            goalProgressBar.textContent = `${Math.round(progress)}%`;
+
+            goalSavedText.textContent = `Saved: ${formatCurrency(totalSaved)}`;
+            goalRemainingText.textContent = `Remaining: ${formatCurrency(remaining)}`;
         };
 
         const updateEntryButton = () => {
@@ -264,57 +290,42 @@
                 addEntryBtn.disabled = false;
             }
         };
+        
+        const runUpdates = () => {
+            renderLog();
+            updateTotals();
+            updateGoalProgress();
+            updateEntryButton();
+            saveData();
+        };
 
         // --- Event Handlers ---
         weeklyEntryForm.addEventListener('submit', (e) => {
             e.preventDefault();
-            const alexEntry = parseFloat(document.getElementById('alex-entry').value) || 0;
-            const amyEntry = parseFloat(document.getElementById('amy-entry').value) || 0;
-            const spentEntry = parseFloat(document.getElementById('spent-entry').value) || 0;
-            
             weeklyEntries.push({
                 week: weeklyEntries.length + 1,
-                alex: alexEntry,
-                amy: amyEntry,
-                spent: spentEntry
+                alex: parseFloat(document.getElementById('alex-entry').value) || 0,
+                amy: parseFloat(document.getElementById('amy-entry').value) || 0,
+                spent: parseFloat(document.getElementById('spent-entry').value) || 0
             });
-
             weeklyEntryForm.reset();
-            
             runUpdates();
         });
         
-        monthlyExpenseInputs.forEach(input => {
-            input.addEventListener('input', () => {
-                updateTotals();
-                saveData();
-            });
+        [...monthlyExpenseInputs, savingsGoalInput, startingAmountInput].forEach(input => {
+            input.addEventListener('input', runUpdates);
         });
 
         resetButton.addEventListener('click', () => {
-            if (confirm('Are you sure you want to reset all data for the month? This cannot be undone.')) {
+            if (confirm('Are you sure you want to reset all data? This cannot be undone.')) {
                 weeklyEntries = [];
-                localStorage.removeItem('savingsLogEntries');
-                localStorage.removeItem('savingsLogFixed');
-                // Manually reset form since it's not part of the data structure
-                document.getElementById('fixed-expenses-inputs').querySelectorAll('input').forEach(input => {
-                    // This is a bit of a trick to reset to default values in the HTML
-                    const tempForm = document.createElement('form');
-                    const tempInput = document.createElement('input');
-                    tempInput.type = input.type;
-                    tempInput.value = input.defaultValue;
-                    input.value = tempInput.value;
-                });
+                localStorage.clear();
+                weeklyEntryForm.reset();
+                document.getElementById('fixed-expenses-inputs').closest('form')?.reset(); // Reset fixed inputs if in a form
+                loadData(); // Load default values
                 runUpdates();
             }
         });
-
-        const runUpdates = () => {
-            renderLog();
-            updateTotals();
-            updateEntryButton();
-            saveData();
-        };
 
         // --- Initial Load ---
         loadData();
